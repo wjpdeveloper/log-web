@@ -2,7 +2,7 @@
   <div id="app">
     <div class="container">
       <div class="left">
-        <el-tree :data="data" :props="defaultProps" @node-click="handleNodeClick"></el-tree>
+        <el-tree :data="data" :props="defaultProps" @node-click="handleNodeClick" accordion></el-tree>
       </div>
       <pre class="right" v-html="html" />
     </div>
@@ -34,12 +34,15 @@ export default {
           if (!item.includes('/')) {
             arr.push({
               label: item,
-              src: item,
-              children: []
+              src: item
             })
           } else {
-            const obj = arr.find((a) => item.includes(a.label))
+            const folder = item.split('/')[0]
+            const obj = arr.find((a) => folder === a.label)
             if (obj) {
+              if (!obj.children) {
+                obj.children = []
+              }
               obj.children.push({
                 src: item,
                 label: item.replace(obj.label + '/', '')
@@ -48,7 +51,9 @@ export default {
           }
         })
         arr.forEach(a => {
-          a.children.sort((x, y) => {y.label - x.label})
+          if (a.children) {
+            a.children.sort((x, y) => y.label.replace(/.log/g, '').replace(/-/g, '') - x.label.replace(/.log/g, '').replace(/-/g, ''))
+          }
         })
         this.data = arr
       }
@@ -58,7 +63,9 @@ export default {
   },
   methods: {
     handleNodeClick(data) {
+      document.documentElement.scrollTop = 0
       if (!data.children) {
+        this.html = ''
         this.$axios({
           method:'get',
           url: this.api + '/log',
@@ -90,11 +97,11 @@ body {
   justify-content: center;
 }
 .container {
-  width: 1000px;
+  width: 100%;
   display: flex;
 }
 .left {
-  width: 200px;
+  width: 250px;
   padding: 15px;
   background-color: #fff;
   min-height: 100ch;
@@ -105,6 +112,8 @@ body {
   width: 100%;
   margin-left: 10px;
   background-color: #fff;
+  word-break: break-all;
+  white-space: pre-line;
 }
 pre {
   margin: 0;
