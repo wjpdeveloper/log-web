@@ -20,7 +20,7 @@ export default {
         label: 'label'
       },
       html: '',
-      api: 'http://118.24.168.221:9998'
+      api: 'http://localhost:9998'
     }
   },
   mounted() {
